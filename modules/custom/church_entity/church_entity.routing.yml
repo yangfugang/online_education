@@ -1,0 +1,12 @@
+entity.church_entity.collection:
+  path: '/admin/content/church_entity'
+  defaults:
+  # Calls the list controller, defined in the annotation of the Church entity.
+    _entity_list: 'church_entity'
+    _title: 'Church List'
+  requirements:
+  # Checks for permission directly.
+    _permission: 'access church overview'
+  options:
+    _admin_route: TRUE
+  base_route: system.admin_content

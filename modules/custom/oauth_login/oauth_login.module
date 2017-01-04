@@ -1,0 +1,74 @@
+<?php
+
+/**
+ * @file
+ * Contains oauth_login.module..
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Entity\EntityInterface;
+
+use Drupal\simple_oauth\Entity\AccessToken;
+use Drupal\Core\Entity as ContentEntityType;
+
+/**
+ * Implements hook_help().
+ */
+function oauth_login_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the oauth_login module.
+    case 'help.page.oauth_login':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('User login with oauth token.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_ENITTY_TYPE_insert()
+ * 当添加用户时触发的事件，这里添加Token
+ */
+function oauth_login_user_insert(Drupal\Core\Entity\EntityInterface $account) {
+  //创建新的Access Token
+  $token = AccessToken::create(array(
+    'user_id' => 1,
+    'auth_user_id' => $account->id()
+  ));
+  $token->save();
+
+  //更新自动生成的Token所有者
+  //查找符合条件的内容
+  $ids = \Drupal::entityQuery('access_token')
+    ->condition('auth_user_id', $account->id())
+    ->condition('resource', 'authentication')
+    ->sort('id', 'DESC')
+    ->range(NULL, 1)
+    ->execute();
+
+  $id = array_slice($ids, 0, 1)[0];
+  $entitie = \Drupal::entityTypeManager()
+    ->getStorage('access_token')
+    ->load($id);
+  $entitie->set('user_id', 1)
+    ->save();
+}
+
+/**
+ *  Implements hook_ENTITY_TYPE_delete()
+ *  删除用户时删除Token
+ */
+function oauth_login_user_delete(Drupal\Core\Entity\EntityInterface $account) {
+  //查找符合条件的内容
+  $ids = \Drupal::entityQuery('access_token')
+    ->condition('auth_user_id', $account->id())
+    ->execute();
+  //获取存储对象
+  $storage_handler = \Drupal::entityTypeManager()->getStorage('access_token');
+  //加载对象
+  $entities = $storage_handler->loadMultiple($ids);
+  //删除对象
+  $storage_handler->delete($entities);
+}

@@ -1,0 +1,5 @@
+entity.church_entity.add_form:
+  route_name: entity.church_entity.add_form
+  title: 'Add Church'
+  appears_on:
+    - entity.church_entity.collection

@@ -1,0 +1,7 @@
+# 添加一些服务
+services:
+  courseware.check_ower:
+    class: Drupal\courseware\Access\CheckEntityOwer
+    arguments: ['@current_user']
+    tags:
+      - { name: check_ower, applies_to: _permission }

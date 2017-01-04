@@ -1,0 +1,8 @@
+name: Church Entity
+type: module
+description: Create a content entity wish church.
+core: 8.x
+package: Custom
+dependencies:
+  - entity_reference
+  - options

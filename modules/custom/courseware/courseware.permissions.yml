@@ -1,0 +1,27 @@
+add courseware entity entities:
+  title: 'Create new Courseware entity entities'
+
+administer courseware entity entities:
+  title: 'Administer Courseware entity entities'
+  description: 'Allow to access the administration form to configure Courseware entity entities.'
+  restrict access: true
+
+delete courseware entity entities:
+  title: 'Delete Courseware entity entities'
+
+edit courseware entity entities:
+  title: 'Edit Courseware entity entities'
+
+access courseware entity overview:
+  title: 'Access the Courseware entity overview page'
+
+view published courseware entity entities:
+  title: 'View published Courseware entity entities'
+
+view unpublished courseware entity entities:
+  title: 'View unpublished Courseware entity entities'
+
+# 查看内容中的视频
+view  courseware entity content video:
+  title: 'View Courseware Content Video'
+  description: '允许查看内容中的视频'

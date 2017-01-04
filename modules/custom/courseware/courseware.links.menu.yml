@@ -1,0 +1,19 @@
+# Courseware entity menu items definition
+entity.courseware_entity.collection:
+  title: 'Courseware entity list'
+  route_name: entity.courseware_entity.collection
+  description: 'List Courseware entity entities'
+  parent: system.admin_structure
+  weight: 100
+
+courseware_entity.admin.structure.settings:
+  title: Courseware entity settings
+  description: 'Configure Courseware entity entities'
+  route_name: courseware_entity.settings
+  parent: system.admin_structure
+
+user.courseware_entity.add_form:
+  title: '添加课件'
+  description: '添加一个新的课件'
+  router_name: user.courseware.add_entity
+  parent: account

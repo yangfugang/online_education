@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies:
+    config:
+        - field.field.node.courseware_node.body
+        - node.type.courseware_node
+    module:
+        - text
+        - user
+id: node.courseware_node.default
+targetEntityType: node
+bundle: courseware_node
+mode: default
+content:
+    body:
+        label: hidden
+        type: text_default
+        weight: 101
+        settings: {  }
+        third_party_settings: {  }
+    links:
+        weight: 100
+hidden: {  }

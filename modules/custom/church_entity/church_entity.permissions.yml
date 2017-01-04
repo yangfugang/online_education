@@ -1,0 +1,22 @@
+add church entities:
+  title: 'Create new Church entities'
+
+administer church entities:
+  title: 'Administer Church entities'
+  description: 'Allow to access the administration form to configure Church entities.'
+  restrict access: true
+
+delete church entities:
+  title: 'Delete Church entities'
+
+edit church entities:
+  title: 'Edit Church entities'
+
+access church overview:
+  title: 'Access the Church overview page'
+
+view published church entities:
+  title: 'View published Church entities'
+
+view unpublished church entities:
+  title: 'View unpublished Church entities'

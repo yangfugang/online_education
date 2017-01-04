@@ -1,0 +1,299 @@
+<?php
+
+/**
+ * @file
+ * Contains courseware.module..
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Form\FormStateInterface;
+//use Drupal\responsive_image\Entity\ResponsiveImageStyle;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Render\Element;
+/**
+ * Implements hook_help().
+ */
+function courseware_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the courseware module.
+    case 'help.page.courseware':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('课件管理系统') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * hook_form_alter
+ * 设置表单标题为必填项目
+ */
+function courseware_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  //kint($form);
+  if($form_id == 'courseware_entity_add_form' || $form_id == 'courseware_entity_form' || $form_id == 'courseware_entity_edit_form') {
+    $form['name']['widget'][0]['#required'] = $form['name']['widget'][0]['value']['#required'] = $form['name']['widget']['#required'] = TRUE;
+  }
+
+  # 禁止取消超级管理员账户
+  $account = \Drupal::currentUser();
+  $roles = $account->getRoles();
+  if($form_id == 'user_cancel_form' || $form_id == 'user_multiple_cancel_confirm') {
+    # 提取用户UID列表
+    $uids = [];
+    if($form_id == 'user_cancel_form') {
+      $uids[] = $form['uid']['#value'];
+    } elseif($form_id == 'user_multiple_cancel_confirm') {
+      foreach($form['accounts'] as $key => $value) {
+        if(is_numeric($key)) {
+          $uids[] = $value['#value'];
+        }
+      }
+    }
+
+    if((in_array('administrator', $roles) || in_array('manager', $roles)) && in_array($account->id(), $uids)) {
+      drupal_set_message('不能取消自己的账户。', 'error');
+      //$response = new RedirectResponse(\Drupal::destination()->getAsArray()['destination']);
+      //$response->send();
+      $form['actions']['submit']['#disabled'] = TRUE;
+    }
+  }
+
+  # 禁止编辑超级管理员账户
+  if($form_id == 'user_form') {
+    # 获取URL参数
+    $route_match = \Drupal::service('current_route_match');
+    $user = $route_match->getParameter('user');
+    $uid = $user->id();
+
+    if(in_array('administrator', $user->getRoles()) && $user->id() != $account->id() && !in_array('administrator', $account->getRoles())) {
+      throw new Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
+    }
+  }
+
+  # 禁用文本区域的格式选择
+  # $form['field_body']['widget'][0]['format']['#access'] = FALSE;
+  $form['#attached']['library'][] = 'courseware/courseware.scripts';
+
+  # 检查文件名
+  # 获取表单内所有Element
+  $els = Element::children($form);
+  foreach($els as $elName) {
+    if(isset($form[$elName]['widget'])) {
+      foreach($form[$elName]['widget'] as $w => $widget) {
+        if(is_numeric($w)) {
+          if(@$form[$elName]['widget'][$w]['#type'] == 'managed_file') {
+            $form[$elName]['widget'][$w]['#value_callback'] = [
+              'Drupal\courseware\Controller\CoursewareController',
+              'rename_chinese_filename'
+            ];
+          }
+        }
+      }
+    }
+  }
+  //kint($form);
+}
+
+
+function hide_text_format_element($element) {
+  $element['format']['#access'] = FALSE;
+  return $element;
+}
+
+/**
+* hook_form_FORM_ID_alter
+* 禁止赋予Administrator角色
+*/
+function courseware_form_user_form_alter(&$form, FormStateInterface $form_state) {
+  $account = \Drupal::currentUser();
+  if(!in_array('administrator', $account->getRoles())) {
+    unset($form['account']['roles']['#options']['administrator']);
+  }
+  # 管理员有更改角色的权限
+  if(in_array('manager', $account->getRoles())) {
+    $form['account']['roles']['#access'] = TRUE;
+  }
+}
+
+/**
+* hook_views_query_alter
+* 隐藏管理员账户
+*/
+function courseware_views_query_alter(Drupal\views\ViewExecutable $view, Drupal\views\Plugin\views\query\QueryPluginBase $query) {
+  $account = \Drupal::currentUser();
+  //kint($query);
+  if(!in_array('administrator', $account->getRoles())) {
+    if($view->id() == 'user_admin_people') {
+      # 先关联管理员账户，然后再用WHERE 过滤掉
+      # SELECT * FROM users_field_data LEFT JOIN user__roles ON users_field_data.uid = user__roles.entity_id AND user__roles.roles_target_id = 'administrator' WHERE user__roles.roles_target_id IS NULL
+      # 添加关联的数据表
+      $configuration = [
+        'left_table' => 'users_field_data',
+        'left_field' => 'uid',
+        'table' => 'user__roles',
+        'field' => 'entity_id',
+        'extra_operator' => 'AND',
+        'extra' => [
+          [
+            'field' => 'roles_target_id',
+            'value' => 'administrator',
+            'operator' => '='
+          ]
+        ]
+      ];
+      $join = \Drupal::service('plugin.manager.views.join')->createInstance('standard', $configuration);
+      $query->addRelationship('user__roles', $join, 'user__roles');
+      # 添加过滤条件
+      $query->where[] = array(
+        'conditions' => array(
+          array(
+            'field' => 'user__roles.roles_target_id IS NULL',
+            'value' => [],
+            'operator' => 'formula'
+          )
+        ),
+        'args' => [],
+        'type' => 'AND'
+      );
+    }
+  }
+}
+
+/**
+ * hook_ENTITY_TYPE_insert
+ */
+/*function courseware_file_insert(Drupal\file\FileInterface $file) {
+  //获取文件DIR
+  $dirArr = explode('/', $file->getFileUri());
+  if($dirArr[0] == 'tmp')
+    return;
+  //获取文件名
+  $str = $file->getFilename();
+  $nameArr = explode('.', $str);
+  $suffix = array_pop($nameArr);
+  $name = implode('.', $nameArr);
+
+  //如果文件名中含有中文
+  if(preg_match("/[\x7f-\xff]/", $name)) {
+    $nameStr = time() . '.' . $suffix;
+
+    //处理文件URI
+    array_pop($dirArr);
+    $uri = implode('/', $dirArr) . '/' . $nameStr;
+
+    $file = file_move($file, $uri);
+  }
+}*/
+
+/**
+ * hook_ENTITY_TYPE_presave
+ */
+/*function courseware_courseware_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
+  //kint($entity->get('field_courseware_files')->getValue());
+  //exit;
+}*/
+
+function courseware_views_pre_render(\Drupal\views\ViewExecutable $view) {
+  if ($view->id() == "views_custom_front_page") {
+    if(count($view->result) <= 0) {
+      $path = \Drupal::request()->getpathInfo();
+      #$route_match = \Drupal::service('current_route_match');
+      #$pars = $route_match->getParameter('node');
+
+      $subjectId = $gradeId = '';
+
+      if(isset($_GET['field_subject_target_id'])) {
+        $subjectId = $_GET['field_subject_target_id'];
+      } else {
+        $arr = explode('/', $path);
+        $subjectId = @$arr[2];
+      }
+
+      if(is_numeric($subjectId)) {
+        $subject = \Drupal::service('entity.manager')->getStorage('taxonomy_term')->load($subjectId)->getName();
+        $subject .= '学科';
+      }
+
+      if(isset($_GET['field_grade_target_id'])) {
+        $gradeId = $_GET['field_grade_target_id'];
+      }
+
+      if(is_numeric($gradeId)) {
+        $grade = \Drupal::service('entity.manager')->getStorage('taxonomy_term')->load($gradeId)->getName();
+        $grade .= '年级';
+      }
+      $empty = $subject;
+      if(!empty($grade)) $empty .= " / $grade";
+      $view->empty['area_text_custom']->options['content'] = '<h1>' . $empty . ' 暂无上传课件。</h1>';
+    }
+    /*$view->execute();
+    kint($view->result);*/
+  }
+}
+
+function courseware_file_download($uri) {
+  $account = \Drupal::currentUser();
+  $scheme = file_uri_scheme($uri);  //文件类型，是私有还是公有。
+  $target = file_uri_target($uri);
+  $hasRead = FALSE;
+  $fileArr = explode('.', $uri);
+  $type = array_pop($fileArr);
+
+  if($scheme == 'private') {
+
+    foreach($account->getRoles() as $role) {
+      if($role == 'teacher' || $role == 'team_leader' || $type == 'pdf') {
+        $hasRead = TRUE;
+        break;
+      }
+    }
+  }
+
+  if(!$hasRead) {
+    drupal_set_message('你没有权限访问这个文件。', 'error');
+    //$response = new Symfony\Component\HttpFoundation\RedirectResponse('/node');
+    //$response->send();
+    throw new Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
+    //return AccessResult::forbidden();
+  }
+}
+
+
+/**
+ * hook_page_attachments
+ */
+/*function courseware_page_attachments(array &$attachments) {
+  $attachments['#attached']['library'][] = 'courseware/ckplayer.settings';
+}*/
+
+/**
+ * hook_ENTITY_TYPE_view
+ * 对匿名用户隐藏内容中的视频。
+ */
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+function courseware_courseware_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+  $build['#attached']['library'][] = 'courseware/ckplayer.settings';
+  //匿名用户不允许看视频
+  $account = \Drupal::currentUser();
+  if(!$account->hasPermission('view  courseware entity content video')) {
+    $content = $build['field_body'][0]['#text'];
+    $build['field_body'][0]['#text'] = preg_replace('/<video[^>]*>.*?<\/video>/', '<div class="alert alert-info" role="alert">这里有一个视频，请登陆后查看。</div>', $content);
+  }
+}
+
+/**
+ * hook_link_alter
+ */
+function courseware_link_alter(&$vars) {
+  $account = \Drupal::currentUser();
+  if($vars['url']->toString() == '/admin/content/courseware') {
+    $vars['options']['attributes']['class'][] = 'toolbar-icon-system-admin-content';
+    /* if(in_array('administrator', $account->getRoles())) {
+     * $vars['url']->setOption('access', FALSE);
+    }*/
+  }
+  
+}

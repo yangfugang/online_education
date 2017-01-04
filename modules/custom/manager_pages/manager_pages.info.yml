@@ -1,0 +1,6 @@
+name: Manager Pages
+type: module
+descrption: 更为易用的管理员页面。
+core: 8.x
+package: Custom
+dependencies:

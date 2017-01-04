@@ -1,0 +1,7 @@
+name: OAuth Login
+type: module
+description: User login with oauth token.
+core: 8.x
+package: Custom
+dependencies:
+  - simple_oauth

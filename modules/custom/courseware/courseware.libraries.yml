@@ -1,0 +1,14 @@
+ckplayer.settings:
+  version: 1
+  js:
+    ckplayer/ckplayer.js: {}
+    ckplayer/getPlayer.js: {}
+  dependencies:
+    - core/jquery
+
+courseware.scripts:
+  version: 1
+  js:
+    scripts/courseware.js: {}
+  dependencies:
+    - core/jquery

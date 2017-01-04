@@ -1,0 +1,5 @@
+name: Courseware
+type: module
+description: 课件管理系统
+core: 8.x
+package: Custom

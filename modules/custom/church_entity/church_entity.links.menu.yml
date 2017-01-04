@@ -1,0 +1,12 @@
+# Church menu items definition
+entity.church_entity.collection:
+  title: 'Church list'
+  route_name: entity.church_entity.collection
+  description: 'List Church entities'
+  parent: system.admin_content
+
+church_entity.admin.structure.settings:
+  title: Church settings
+  description: 'Configure Church entities'
+  route_name: church_entity.settings
+  parent: system.admin_structure

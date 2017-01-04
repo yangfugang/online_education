@@ -1,0 +1,32 @@
+entity.courseware_entity.collection:
+  path: '/admin/content/courseware_entity'
+  defaults:
+  # Calls the list controller, defined in the annotation of the Church entity.
+    _entity_list: 'courseware_entity'
+    _title: 'Courseware List'
+  requirements:
+  # Checks for permission directly.
+    _permission: 'access courseware overview'
+  options:
+    _admin_route: TRUE
+  base_route: system.admin_content
+
+# 添加课件的页面
+user.courseware.add_entity:
+  path: /user/{user}/courseware/add
+  defaults:
+    _title: '添加课件'
+    _controller: '\Drupal\courseware\Controller\CoursewareController::courseware_add'
+    #_form: '\Drupal\courseware\Form\CoursewareEntityForm'
+  requirements:
+    _permission: 'add courseware entity entities'
+
+# 课件详情页面
+# 这个路由暂时弃用，使用Courseware自定义的路径
+courseware.view_page:
+  path: /custom/courseware/{courseware_id}
+  defaults:
+    _controller: '\Drupal\courseware\Controller\CoursewareController::view_courseware'
+  requirements:
+    _permission: 'access content'
+    courseware_id: '[0-9]+'

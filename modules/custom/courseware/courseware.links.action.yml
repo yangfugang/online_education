@@ -1,0 +1,13 @@
+entity.courseware_entity.add_form:
+  route_name: entity.courseware_entity.add_form
+  title: 'Add Courseware entity'
+  appears_on:
+    - entity.courseware_entity.collection
+    - view.views_courseware_admin_list.page_1
+
+# 在用户的课件列表增加按钮
+user.courseware_entity.add_form:
+  route_name: user.courseware.add_entity
+  title: '添加课件'
+  appears_on:
+    - view.views_courseware_admin_list.page_2

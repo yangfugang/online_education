@@ -1,0 +1,1 @@
+jQuery('.filter-wrapper').hide();
