@@ -1,0 +1,7 @@
+manager.pages.index:
+  path: '/manager/{user}'
+  defaults:
+    _title: '管理中心'
+    _controller: '\Drupal\manager_pages\Controller\ManagerPages::index'
+  requirements: 
+    _permission: 'use manager pages'
