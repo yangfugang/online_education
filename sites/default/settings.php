@@ -715,15 +715,15 @@ $settings['trusted_host_patterns'] = array(
  *
  * Keep this code block at the end of this file to take full effect.
  */
-# if (file_exists(__DIR__ . '/settings.local.php')) {
-#   include __DIR__ . '/settings.local.php';
-# }
+if (file_exists(__DIR__ . '/settings.local.php')) {
+  include __DIR__ . '/settings.local.php';
+}
 $databases['default']['default'] = array (
   'database' => 'd8',
   'username' => 'root',
-  'password' => 'yl',
+  'password' => 'yl19900808!',
   'prefix' => '',
-  'host' => 'db',
+  'host' => '127.0.0.1',
   'port' => '3306',
   'namespace' => 'Drupal\\Core\\Database\\Driver\\mysql',
   'driver' => 'mysql',
