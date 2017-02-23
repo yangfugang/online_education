@@ -10,7 +10,6 @@ class ManagerPages extends ControllerBase {
         $element = [
             '#markup' => '<h1>管理员首页</h1>'
         ];
-
         return $element;
     }
 }

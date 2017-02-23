@@ -3,3 +3,8 @@
  * 创建用户管理页面
  *
  */
+
+function test() {
+    print_r();
+    
+}

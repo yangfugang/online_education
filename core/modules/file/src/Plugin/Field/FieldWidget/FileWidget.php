@@ -114,7 +114,6 @@ class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
     $title = $this->fieldDefinition->getLabel();
     $description = $this->getFilteredDescription();
-
     $elements = array();
 
     $delta = 0;
@@ -197,7 +196,6 @@ class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
         '#cardinality' => $cardinality,
       );
     }
-
     return $elements;
   }
 
@@ -322,7 +320,7 @@ class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
     // We depend on the managed file element to handle uploads.
     $return = ManagedFile::valueCallback($element, $input, $form_state);
-
+    
     // Ensure that all the required properties are returned even if empty.
     $return += array(
       'fids' => array(),
@@ -558,7 +556,7 @@ class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
     }
 
     // If there are more files uploaded via the same widget, we have to separate
-    // them, as we display each file in it's own widget.
+    // them, as we display each file in its own widget.
     $new_values = array();
     foreach ($submitted_values as $delta => $submitted_value) {
       if (is_array($submitted_value['fids'])) {

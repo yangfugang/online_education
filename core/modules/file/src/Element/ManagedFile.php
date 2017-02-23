@@ -58,6 +58,7 @@ class ManagedFile extends FormElement {
   public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
     // Find the current value of this field.
     $fids = !empty($input['fids']) ? explode(' ', $input['fids']) : [];
+    
     foreach ($fids as $key => $fid) {
       $fids[$key] = (int) $fid;
     }
@@ -134,7 +135,6 @@ class ManagedFile extends FormElement {
         $default_fids = isset($element['#default_value']) ? $element['#default_value'] : [];
         $return = ['fids' => []];
       }
-
       // Confirm that the file exists when used as a default value.
       if (!empty($default_fids)) {
         $fids = [];
@@ -204,7 +204,7 @@ class ManagedFile extends FormElement {
    * support for a default value.
    */
   public static function processManagedFile(&$element, FormStateInterface $form_state, &$complete_form) {
-
+    
     // This is used sometimes so let's implode it just once.
     $parents_prefix = implode('_', $element['#parents']);
 
