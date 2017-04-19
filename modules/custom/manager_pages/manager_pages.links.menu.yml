@@ -1,0 +1,7 @@
+# 在配置界面设置菜单
+manager_pages.settings:
+  title: 'Manager Pages Settings'
+  description: 'Set whether the top bar is displayed.'
+  parent: system.admin_config_system
+  route_name: manager_pages.admin_settings
+  weight: 30

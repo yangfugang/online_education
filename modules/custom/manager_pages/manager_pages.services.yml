@@ -1,0 +1,4 @@
+services:
+  manager_pages.extra:
+    class: Drupal\manager_pages\ManagerPagesExtra
+    arguments: ['@current_user', '@config.factory', '@current_route_match', '@router.admin_context']

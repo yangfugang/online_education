@@ -1,0 +1,114 @@
+html {
+  font-size: 15px;
+}
+
+body {
+  padding-top: 32px;
+}
+
+.manager-panel {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  font-size: 13px;
+}
+.manager-panel a {
+  text-decoration: none;
+  color: #eee;
+  border: 0;
+  padding: 0 8px;
+  display: block;
+}
+.manager-panel .menu-item-lists, .manager-panel div.pop-menu-wrapper .manager-menu-item, .manager-panel div.pop-menu-wrapper a {
+  width: 160px;
+}
+.manager-panel div.pop-menu-wrapper {
+  background-color: #32373c;
+  position: absolute;
+  z-index: 1000;
+  display: none;
+}
+.manager-panel div.pop-menu-wrapper .manager-menu-item, .manager-panel div.pop-menu-wrapper a {
+  height: 26px;
+  line-height: 26px;
+}
+.manager-panel .hover {
+  background-color: #32373c;
+}
+.manager-panel .hover a.manager-main-item {
+  color: #00b9eb;
+}
+.manager-panel .hover .pop-menu-wrapper {
+  display: block;
+}
+.manager-panel .pop-menu-wrapper ul {
+  float: left;
+}
+.manager-panel a:hover {
+  color: #00b9eb;
+  text-decoration: none;
+}
+
+#manager-bar {
+  width: 100%;
+  background-color: #23282d;
+  height: 32px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+}
+#manager-bar ul {
+  padding: 0;
+  margin: 0;
+}
+#manager-bar ul li {
+  float: left;
+  list-style: none;
+}
+#manager-bar ul a.manager-main-item {
+  display: block;
+  height: 32px;
+  line-height: 32px;
+}
+#manager-bar ul a.manager-main-item span.glyphicon {
+  font-size: 16px;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  top: 3px;
+}
+#manager-bar ul li.bar-logo span {
+  background-image: url(/modules/custom/manager_pages/templates/images/icon-w-drupal.svg);
+  background-size: 26px 26px;
+  background-position: 50% 50%;
+  width: 26px;
+  height: 32px;
+  top: 0 !important;
+}
+#manager-bar ul li.bar-logo a {
+  height: 32px;
+}
+#manager-bar .topbar-menu-right {
+  float: right;
+}
+#manager-bar .topbar-menu-right .user-icon {
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  float: left;
+}
+#manager-bar .topbar-menu-right .user-icon img {
+  width: 100%;
+}
+#manager-bar .topbar-menu-right .pop-menu-wrapper {
+  width: 240px;
+  right: 0;
+}
+
+@media screen and (max-width: 768px) {
+  #manager-bar {
+    height: 46px;
+    min-width: 300px;
+  }
+}
+
+/*# sourceMappingURL=manager-panel.css.map */

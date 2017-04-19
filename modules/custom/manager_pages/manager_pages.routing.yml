@@ -1,7 +1,22 @@
-manager.pages.index:
-  path: '/manager/{user}'
+# 模块的设置表单
+manager_pages.admin_settings:
+  path: '/admin/config/system/manager-pages'
+  defaults:
+    _form: '\Drupal\manager_pages\Form\ManagerPagesSettingsForm'
+    _title: 'Manager Pages Settings'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+# 管理首页
+manager_pages.index:
+  path: '/manager'
   defaults:
     _title: '管理中心'
     _controller: '\Drupal\manager_pages\Controller\ManagerPages::index'
   requirements: 
     _permission: 'use manager pages'
+  options:
+    _admin_route: TRUE
+

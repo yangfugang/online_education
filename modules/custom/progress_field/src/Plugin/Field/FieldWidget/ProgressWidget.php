@@ -84,86 +84,48 @@ class ProgressWidget extends FileWidget {
     $user = \Drupal::currentUser();
     $post = \Drupal::request()->request->all();
     $validateSize = current($element['#upload_validators']['file_validate_size']);
+    
     # 判断新提交的文件
-    if(empty($input['fids'])) {
-      $form_field_name = implode('_', $element['#parents']);
-      # 如果是通过Nginx上传的文件
-      if(isset($post['tmp_file_name']) && isset($post['tmp_file_path']) && empty($post['fid'])) {
-        # 检查文件大小
-        if($post['tmp_file_size'] > $validateSize) {
-          $form_state->setError($element, t('The file %file could not be saved because it exceeds %maxsize, the maximum allowed size for uploads.', ['%file' => $post['tmp_file_name'], '%maxsize' => format_size($validateSize)]));
-        }
-        else {
-          $directory = $element['#upload_location'];
-          # 检查目标目录是否存在
-          if(file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
-            $post['tmp_file_name'] = self::renameChinese($post['tmp_file_name']);
-            # 先把文件移动到目标目录
-            if($path = file_unmanaged_move($post['tmp_file_path'], $directory . '/' . $post['tmp_file_name'])) {
-              # 创建一个File对象
-              $values = array(
-                'uid' => $user->id(),
-                'status' => 0,
-                'filename' => $post['tmp_file_name'],
-                'uri' => $path,
-                'filesize' => $post['tmp_file_size'],
-                'filemime' => $post['tmp_file_content_type']
-              );
-              $file = File::create($values);
-              $file->save();
-              $input['fids'] .= $file->id();
-              # 把保存过的文件放入 $_POST 数据中，第二次调用时不需要再创建文件。
-              \Drupal::request()->request->add(['fid' => $file->id()]);
-            }
-          } 
-        }
+    # 如果是通过Nginx上传的文件
+    if(isset($post['tmp_file_name']) && isset($post['tmp_file_path']) && empty($post['fid'])) {
+      # 检查文件大小
+      if($post['tmp_file_size'] > $validateSize) {
+        $form_state->setError($element, t('The file %file could not be saved because it exceeds %maxsize, the maximum allowed size for uploads.', ['%file' => $post['tmp_file_name'], '%maxsize' => format_size($validateSize)]));
       }
-      elseif(!empty($post['fid'])) {
-        # 单个文件时，会返回上传的文件，所以需要设置表单默认值
-        $element['#default_value']['fids'][] = array($post['fid']);
-        $input = FALSE;
-        # 多个文件时，会返回空白的表单，不需要设置默认值
-        \Drupal::request()->request->remove('fid');
-        \Drupal::request()->request->remove('tmp_file_path');
-      }
-
-      # 如果是PHP提交的文件
-      $all_files = \Drupal::request()->files->get('files', array());
-      if(!empty($all_files[$form_field_name])) {
-        $file_upload = $all_files[$form_field_name];
-        // Prepare uploaded files info. Representation is slightly different
-        // for multiple uploads and we fix that here.
-        $uploaded_files = $file_upload;
-        if (!is_array($file_upload)) {
-          $uploaded_files = array($file_upload);
-        }
-        
-        foreach ($uploaded_files as $i => $file_info) {
-          if(self::renameChinese($file_info->getClientOriginalName()) != $file_info->getClientOriginalName()) {
-            # 最后一个参数为TRUE时，会使用rename方法移动文件，而不是move_uploaded_file
-            $newFile = new UploadedFile(
-              $file_info->getRealPath(),
-              self::renameChinese($file_info->getClientOriginaName()),
-              $file_info->getClientMimeType(),
-              $file_info->getClientSize(),
-              $file_info->getError()
+      else {
+        $directory = $element['#upload_location'];
+        # 检查目标目录是否存在
+        if(file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
+          $post['tmp_file_name'] = self::renameChinese($post['tmp_file_name']);
+          # 先把文件移动到目标目录
+          if($path = file_unmanaged_move($post['tmp_file_path'], $directory . '/' . $post['tmp_file_name'])) {
+            # 创建一个File对象
+            $values = array(
+              'uid' => $user->id(),
+              'status' => 0,
+              'filename' => $post['tmp_file_name'],
+              'uri' => $path,
+              'filesize' => $post['tmp_file_size'],
+              'filemime' => $post['tmp_file_content_type']
             );
-            $uploaded_files[$i] = $newFile;
+            $file = File::create($values);
+            $file->save();
+            $input['fids'] = $file->id();
+            # 把保存过的文件放入 $_POST 数据中，第二次调用时不需要再创建文件。
+            \Drupal::request()->request->add(['fid' => $file->id()]);
           }
-        }
-
-        if(count($uploaded_files) <= 1) {
-          $uploaded_files = current($uploaded_files);
-        }
-
-        $all_files[$form_field_name] = $uploaded_files;
-        \Drupal::request()->files->set('files', $all_files);
+        } 
       }
-      
     }
-
-    $return = parent::value($element, $input, $form_state);
-    return $return;
+    elseif(!empty($post['fid'])) {
+      # 单个文件时，会返回上传的文件，所以需要设置表单默认值
+      $element['#default_value']['fids'][] = array($post['fid']);
+      $input = FALSE;
+      # 多个文件时，会返回空白的表单，不需要设置默认值
+      \Drupal::request()->request->remove('fid');
+      \Drupal::request()->request->remove('tmp_file_path');
+    }
+    return parent::value($element, $input, $form_state);
   }
 
   static public function renameChinese($name) {

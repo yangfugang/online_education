@@ -18,21 +18,3 @@ function progress_field_js_settings_alter(array &$settings, AttachedAssetsInterf
         }
     }
 }
-
-/**
- * 修改某个字段插件的属性，行为靠前
- * HOOK_field_widget_WIDGET_TYPE_form_alter
- * WIDGET_TYPE 参考 https://api.drupal.org/comment/60724#comment-60724
- */
-#function progress_field_field_widget_file_generic_progress_form_alter(&$element, FormStateInterface $form_state, $context) {
-#}
-
-/**
- * 添加上传进度的session标记
- * HOOK_field_widget_WIDGET_TYPE_form_alter
- * WIDGET_TYPE 参考 https://api.drupal.org/comment/60724#comment-60724
- */
-
-function progress_field_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-    #kint($form);
-}

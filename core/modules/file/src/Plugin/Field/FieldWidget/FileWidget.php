@@ -114,6 +114,7 @@ class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
     $title = $this->fieldDefinition->getLabel();
     $description = $this->getFilteredDescription();
+
     $elements = array();
 
     $delta = 0;
@@ -196,6 +197,7 @@ class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
         '#cardinality' => $cardinality,
       );
     }
+
     return $elements;
   }
 
@@ -320,7 +322,7 @@ class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
     // We depend on the managed file element to handle uploads.
     $return = ManagedFile::valueCallback($element, $input, $form_state);
-    
+
     // Ensure that all the required properties are returned even if empty.
     $return += array(
       'fids' => array(),

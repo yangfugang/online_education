@@ -1,0 +1,12 @@
+# 需要用到的资源
+manager-bar:
+  version: VERSION
+  css:
+    #base:
+    theme:
+      templates/bootstrap/css/bootstrap.min.css: {}
+      templates/style/css/manager-panel.css: {}      
+  js:
+    templates/scripts/manager-panel.js: {}
+  dependencies:
+    - core/jquery

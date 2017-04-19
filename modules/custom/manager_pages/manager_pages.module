@@ -1,10 +1,200 @@
 <?php
+
+use Drupal\manager_pages\Controller\ManagerPages;
+use Drupal\Core\Url;
+use Drupal\node\Entity\NodeType;
+use Drupal\comment\CommentInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException; 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\ViewExecutable;
+use Drupal\field\FieldStorageConfigInterface;
 /**
  * 创建用户管理页面
- *
+ * 作者：yang_fugang@163.com
  */
 
-function test() {
-    print_r();
-    
+/**
+ * hook_theme_suggestions_alter
+ * 修改建议使用的模板文件
+ * hook_page_attachments
+ * 把资源库添加到页面中
+ */
+
+/**
+ * hook_themes
+ * 实现建议模板，使用page__manager替代page
+ *
+ * @param Array $existing
+ * @param String $type
+ * @param Array $theme
+ * @param String $path
+ * @return Array
+ *  Custom Theme
+ * @see hook_themes
+ */
+function manager_pages_theme($existing, $type, $theme, $path) {
+    $theme = [
+        'page__manager' => [
+            'base hook' => 'page'
+        ],
+
+        'manager_topbar' => [
+            'template' => 'topbar',
+            'variables' => [
+                'accountMenu' => NULL,
+                'createMenu' => NULL,
+                'controllerMenu' => NULL,
+                'unapprovedComments' => NULL
+            ]
+        ]
+    ];
+
+    return $theme;
+}
+
+/**
+ * hook_page_top
+ * 添加topbar
+ * 
+ * @param Array $page_top
+ *  页面头部
+ */
+function manager_pages_page_top(array &$page_top) {
+    $extra = \Drupal::service('manager_pages.extra');
+    $displayBar = $extra->displayBar();
+    if($displayBar) {
+        $page_top['#attached']['library'][] = 'manager_pages/manager-bar';
+        $account = \Drupal::currentUser();
+        $userPage = Url::fromRoute('user.page');
+        $uid = $account->id();
+        # 创建一个链接
+        # $internal_link = \Drupal::l(t('Book admin'), $userPage);
+        $accountMenu = [
+            'uid' => $uid,
+            'userName' => $account->getUsername(),
+            'profilePath' => $userPage,
+            'editPath' => $userPage->toString() . "/$uid/edit",
+            'logoutPath' => Url::fromRoute('user.logout')
+        ];
+
+        # 获取可以创建的内容列表
+        $nodeTypes = NodeType::loadMultiple();
+        $createMenu = [];
+        foreach($nodeTypes as $type => $v) {
+            if($account->hasPermission("create $type content")) {
+                $createMenu[] = [
+                    'title' => t($v->get('name')),
+                    'url' => Url::fromRoute('node.add', ['node_type' => $type])
+                ];
+            }
+        }
+
+        # 获取未发布评论数
+        # 检查权限
+        $unapprovedComments = [
+            'number' => 0,
+            'url' => '#'
+        ];
+        if($account->hasPermission('administer comments')) {
+            $comments = \Drupal::database()->select('comment_field_data', 'c')
+                ->condition('status', CommentInterface::NOT_PUBLISHED, '=')
+                ->condition('default_langcode', 1)
+                ->countQuery()
+                ->execute()
+                ->fetchField();
+
+            $unapprovedComments['number'] = $comments;
+            $unapprovedComments['url'] = Url::fromRoute('comment.admin');
+        }
+
+        # 控制菜单
+        $controllerMenu = [
+            'managerPage' => [
+                'url' => Url::fromRoute('manager_pages.index'),
+                'title' => t('Dashboard')
+            ]
+        ];
+        # 管理内容权限
+        if($account->hasPermission('administer nodes')) {
+            $controllerMenu['nodesPage'] = [
+                'url' => Url::fromRoute('system.admin_content'),
+                'title' => t('Content')
+            ];
+        }
+        # 管理用户权限
+        if($account->hasPermission('administer users')) {
+            $controllerMenu['usersPage'] = [
+                'url' => Url::fromRoute('entity.user.collection'),
+                'title' => t('People')
+            ];
+        }
+        
+        $page_top['manager_pages'] = [
+            '#theme' => 'manager_topbar',
+            '#accountMenu' => $accountMenu,
+            '#createMenu' => $createMenu,
+            '#controllerMenu' => $controllerMenu,
+            '#unapprovedComments' => $unapprovedComments
+            // '#markup' => ''
+        ];
+
+    }
+
+    // 添加侧边栏
+    $is_admin = $extra->currentIsAdminRoute();
+
+}
+
+/**
+* hook_form_FORM_ID_alter
+* 禁止其他用户使用Administrator角色
+*/
+function manager_pages_form_user_form_alter(&$form, FormStateInterface $form_state) {
+  $account = \Drupal::currentUser();
+  if(!in_array('administrator', $account->getRoles())) {
+    unset($form['account']['roles']['#options']['administrator']);
+  }
+  # 管理员有更改角色的权限
+  if($account->hasPermission('administer users')) {
+    $form['account']['roles']['#access'] = TRUE;
+  }
+
+  # 禁止编辑超级管理员
+  $user = \Drupal::routeMatch()->getParameter('user');
+  if(!is_null($user)) {
+    if(in_array('administrator', $user->getRoles()) && !in_array('administrator', $account->getRoles())) {
+      throw new AccessDeniedHttpException();
+    }
+  }
+  
+}
+
+/**
+ * 隐藏不需要显示的内容
+ * hook_views_pre_render
+ *
+ * @param Drupal\views\ViewExecutable $view
+ * @return void
+ */
+function manager_pages_views_pre_render(ViewExecutable $view) {
+    $account = \Drupal::currentUser();
+    if($view->id() == 'user_admin_people' && !in_array('administrator', $account->getRoles())) {
+        # 隐藏过滤条件中的超级管理员角色
+        unset($view->exposed_widgets['role']['#options']['administrator']);
+        # 隐藏权限过滤器
+        unset($view->exposed_widgets['permission']);
+        # 隐藏超级管理员
+        foreach($view->result as $k => $row) {
+            $roles = $row->_entity->getRoles();
+            if(in_array('administrator', $roles)) {
+                unset($view->result[$k]);
+            }
+        }
+
+        #kint($view->field['user_bulk_form']);
+    }
+}
+
+function manager_pages_field_views_data_views_data_alter(array &$data, FieldStorageConfigInterface $field) {
+    #kint($field);
 }

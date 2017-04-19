@@ -1,0 +1,87 @@
+<!--
+顶部工具栏HTML结构
+-->
+<div id="manager-bar" class="manager-panel">
+    <ul class="topbar-menu-left">
+        <li class="bar-logo">
+            <a href="/about">
+                <span class="glyphicon"></span>
+            </a>
+            <div class="pop-menu-wrapper">
+                <ul class="menu-item-lists">
+                    <li class="manager-menu-item"><a href="#">关于</a></li>
+                </ul>
+            </div>
+        </li>
+        <li>
+            <a href="#" class="manager-main-item">
+                <span class="glyphicon glyphicon-dashboard"></span>
+                <span>{{ "Dashboard" | t() }}<span>
+            </a>
+            <div class="pop-menu-wrapper">
+                <ul class="menu-item-lists">
+                {% for item in controllerMenu %}
+                    <li class="manager-menu-item">
+                        <a href="{{ item.url }}">{{ item.title }}</a>
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+        </li>
+
+        <li>
+            <a href="{{ unapprovedComments.url }}" class="manager-main-item">
+                <span class="glyphicon glyphicon-comment"></span>
+                <span>{{ unapprovedComments.number }}<span>
+            </a>
+        </li>
+
+        <li>
+            <a href="#" class="manager-main-item">
+                <span class="glyphicon glyphicon-plus"></span>
+                <span>创建<span>
+            </a>
+
+            <div class="pop-menu-wrapper">
+                <ul class="menu-item-lists">
+                {% for item in createMenu %}
+                    <li class="manager-menu-item">
+                        <a href="{{ item.url }}"> {{ item.title }} </a>
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+        </li>
+    </ul>
+
+    <ul class="topbar-menu-right">
+        <li>
+            <a href="#" class="manager-main-item">
+                <span>{{ accountMenu.userName }}</span>
+                <span class="glyphicon glyphicon-user"></span>
+            </a>
+            <div class="pop-menu-wrapper">
+                <div class="user-icon">
+                    <img src="/modules/custom/manager_pages/templates/images/user-icon.png" />
+                </div>
+                <ul class="menu-item-lists">
+                    <li class="manager-menu-item">
+                        <a href="{{ accountMenu.profilePath }}">
+                        {{ "My account" | t() }}
+                        </a>
+                    </li>
+                    <li class="manager-menu-item">
+                        <a href="{{ accountMenu.editPath }}">
+                        {{ "Edit profile" | t() }}
+                        </a>
+                    </li>
+                    <li class="manager-menu-item">
+                        <a href="{{ accountMenu.logoutPath }}">
+                        {{ "Log out" | t() }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+    </ul>
+</div>
